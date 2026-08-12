@@ -1,0 +1,39 @@
+name: pnRelog
+version: '${version}'
+main: ru.privatenull.pnrelog.PnRelogPlugin
+api-version: '1.16'
+folia-supported: true
+authors: [inventoryType]
+description: Independent combat-tag and anti-relog system with a public API.
+website: https://github.com/pnFolder/pnRelog
+softdepend: [PlaceholderAPI, TAB, SternalBoard, Essentials, CMI, WorldGuard, Towny, Lands, LangHelper]
+commands:
+  pnrelog:
+    description: Управление pnRelog
+    usage: /pnrelog help
+    aliases: [prelog]
+permissions:
+  pnrelog.admin:
+    description: Все административные команды pnRelog
+    default: op
+  pnrelog.status:
+    description: Просмотр собственного статуса боя
+    default: true
+  pnrelog.bypass.tag:
+    description: Игрок не получает боевой тег
+    default: false
+  pnrelog.bypass.restrictions:
+    description: Команды, телепортации и элитры не ограничиваются
+    default: false
+  pnrelog.bypass.logout:
+    description: Выход во время боя не наказывается
+    default: false
+  pnrelog.bypass.cooldowns:
+    description: Обход боевых кулдаунов предметов
+    default: false
+  pnrelog.bypass.prevention:
+    description: Обход запретов предметов
+    default: false
+  pnrelog.bypass.powerups:
+    description: Не отключать состояния fly/god/vanish/gamemode/walkspeed
+    default: false

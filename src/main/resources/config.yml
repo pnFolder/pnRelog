@@ -1,0 +1,213 @@
+# Анонимная статистика bStats (plugin id 33313).
+metrics: true
+
+# ru или en. Для en используется messages-en.yml.
+locale: ru
+# LEGACY поддерживает &-цвета и &#RRGGBB; MINIMESSAGE поддерживает <red>, <gradient> и т.д.
+text-format: LEGACY
+
+updates:
+  # Репозиторий updater зашит в коде: pnFolder/pnRelog.
+  # Поэтому здесь нет repository и менять адрес обновлений не нужно.
+  enabled: true
+  check-interval-hours: 6
+  download-enabled: true
+
+# Разрешает PlaceholderAPI-placeholders в сообщениях, actions и scoreboard.
+use-placeholderapi: false
+
+placeholders:
+  error: "N/A"
+  true: "&aДа"
+  false: "&cНет"
+  delimiter: ", "
+
+# Локальная история решений для администратора. Никуда не отправляется.
+# Здесь видны start/end, quit, grace, permit, circuit breaker и punishment.
+audit:
+  enabled: true
+  file: audit.jsonl
+  max-file-size-megabytes: 16
+  recent-records: 100
+  # Webhook выключен по умолчанию. При включении отправляет только:
+  # наказание за выход, exemption, circuit breaker и suppression.
+  webhook:
+    enabled: false
+    url: "https://discord.com/api/webhooks/CHANGE_ME"
+
+# Типы: MESSAGE, ACTIONBAR, SOUND, TITLE, PLAYER, CONSOLE,
+# BROADCAST_MESSAGE, BROADCAST_ACTIONBAR, BROADCAST_SOUND, BROADCAST_TITLE,
+# REMOVE_ITEMS, BACK_ITEMS. Аргументы события доступны как {0}, {1}, ...
+actions:
+  combat-start-attacker: []
+  combat-start-target: []
+  combat-join: []
+  combat-merge: []
+  combat-continue: []
+  combat-tick: []
+  combat-end: []
+  combat-logout: []
+  combat-kick: []
+  command-blocked: []
+  player-command-blocked: []
+  teleport-blocked: []
+  elytra-blocked: []
+  item-cooldown: []
+  item-prevented: []
+  item-cooldown-ended: []
+  item-held: []
+
+# pnRelog использует абсолютное время, поэтому таймер не растягивается при лагах.
+combat:
+  # Сколько секунд длится бой после подтверждённого урона.
+  duration-seconds: 20
+  # Как часто обновлять actionbar, bossbar и scoreboard. 20 ticks = 1 секунда.
+  tick-interval-ticks: 5
+  # Ограничивает бесконечное продление одного противостояния. 0 отключает лимит.
+  max-link-lifetime-seconds: 180
+  minimum-effective-damage: 0.01
+  ignored-worlds: [spawn]
+  ignored-gamemodes: [CREATIVE, SPECTATOR]
+  detection:
+    projectiles: true
+    explosions: true
+    pets: true
+    area-effects: true
+    ignored-projectiles: [EGG, SNOWBALL]
+
+powerups:
+  # AUTO: CMI -> Essentials -> Bukkit. Можно выбрать BUKKIT, ESSENTIALS или CMI.
+  # AUTO, BUKKIT, ESSENTIALS или CMI.
+  provider: AUTO
+  # Встроенный provider использует Bukkit. Внешний плагин может установить
+  # Essentials/CMI/custom provider через PowerupApi без compile-time зависимости.
+  prevent-start:
+    attacker: [GAMEMODE, VANISH]
+    target: [GAMEMODE, VANISH, GOD]
+  disable-on-start:
+    attacker: [GOD, GAMEMODE, FLY, VANISH]
+    target: [WALKSPEED, FLY]
+
+regions:
+  enabled: false
+  # AUTO, WORLDGUARD, TOWNY, LANDS или custom policy через RegionApi.
+  provider: AUTO
+  worlds: [world, world_nether, world_the_end]
+
+display:
+  # Actionbar, bossbar и scoreboard можно включать независимо.
+  actionbar:
+    enabled: true
+    text: "&cБой &8| &f{time}с &8| &7Противники: &f{opponents}"
+  bossbar:
+    enabled: true
+    title: "&c⚔ Бой: &f{time}с &8• &7{opponent}"
+    color: RED
+    style: SOLID
+    progress: true
+  scoreboard:
+    enabled: true
+    # AUTO использует SternalBoard/TAB, если установлен, иначе встроенный Bukkit provider.
+    provider: AUTO
+    title: "&#E5484D&lpnRelog"
+    lines:
+      - ""
+      - "&7До конца: &f{time}с"
+      - "&7Урон: &a{damage_dealt} &8/ &c{damage_taken}"
+      - ""
+      - "&cПротивники:"
+      - "{opponents}"
+    opponent: "&f{name} &c{health}❤ &9{ping}ms"
+    empty: "&8нет"
+
+restrictions:
+  # BLACKLIST запрещает перечисленное. WHITELIST разрешает только перечисленное.
+  commands:
+    enabled: true
+    # BLACKLIST блокирует перечисленное, WHITELIST разрешает только перечисленное.
+    mode: BLACKLIST
+    entries:
+      - spawn
+      - home
+      - warp
+      - tpa
+      - tpaccept
+      - hub
+      - lobby
+    filter-tab-complete: true
+    # Нельзя применять эти команды к игроку, который находится в бою.
+    targeting-prefixes: [heal, feed, fix, "fix all", tpa]
+  teleports:
+    enabled: true
+    # Имена берутся из PlayerTeleportEvent.TeleportCause.
+    blocked-causes: [COMMAND, PLUGIN, ENDER_PEARL, CHORUS_FRUIT, NETHER_PORTAL, END_PORTAL, SPECTATE, UNKNOWN]
+  block-elytra: true
+
+logout:
+  punish-quits: true
+  # Кики часто вызваны сетью, прокси или администрацией, поэтому безопасный default — false.
+  punish-kicks: false
+  ignored-kick-reasons:
+    - "server closed"
+    - "restarting"
+    - "duplicate login"
+    - "timed out"
+  reconnect-grace-seconds: 5
+  reconnect-combat-seconds: 15
+  penalty:
+    kill: true
+    broadcast: true
+    console-commands: []
+    opponent-commands: []
+    # HIGHEST_DAMAGE или LAST_AGGRESSOR.
+    opponent-selection: HIGHEST_DAMAGE
+
+safety:
+  circuit-breaker:
+    enabled: true
+    window-seconds: 4
+    minimum-disconnects: 3
+    online-fraction: 0.50
+    open-seconds: 30
+
+# Предметные ограничения работают только во время боя. `item-base64` имеет приоритет
+# над `material`; строку можно получить командой /pnrelog copy.
+items:
+  # Правила предметов работают только во время боя.
+  # material = обычный Bukkit-предмет; item-base64 = точная копия кастомного предмета.
+  lang-helper:
+    enabled: false
+    language: RU_RU
+  # Имена matcher-ов, которые внешний плагин зарегистрирует через ItemControlApi.
+  custom-matchers: []
+  cooldowns:
+    chorus:
+      enabled: true
+      name: "Плод хоруса"
+      material: CHORUS_FRUIT
+      interactions: [CONSUME]
+      matchers: [MATERIAL]
+      duration-seconds: 20
+      material-cooldown: true
+      linked: []
+    golden_apple:
+      enabled: true
+      name: "Золотое яблоко"
+      material: GOLDEN_APPLE
+      interactions: [CONSUME]
+      matchers: [MATERIAL]
+      duration-seconds: 30
+      material-cooldown: true
+      linked: []
+  preventions:
+    ender_pearl:
+      enabled: false
+      name: "Эндер-жемчуг"
+      material: ENDER_PEARL
+      interactions: [RIGHT_CLICK_AIR, RIGHT_CLICK_BLOCK, PROJECTILE_LAUNCH]
+      matchers: [MATERIAL]
+      roles: [INTERACTED_ITEM]
+      material-cooldown: true
+
+# Разрешённые placeholders команд санкции:
+# {player}, {uuid}, {opponent}, {opponent_uuid}, {damage_dealt}, {damage_taken}

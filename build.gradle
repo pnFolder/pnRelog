@@ -1,0 +1,99 @@
+plugins {
+    id 'java-library'
+    id 'xyz.jpenilla.run-paper' version '3.1.0'
+    id 'com.gradleup.shadow' version '9.6.1'
+}
+
+group = 'ru.privatenull'
+version = '1.0.0'
+
+base {
+    archivesName = 'pnRelog'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'papermc'
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+    maven {
+        name = 'placeholderapi'
+        url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+    }
+    maven {
+        name = 'codemc'
+        url = 'https://repo.codemc.org/repository/maven-public/'
+    }
+}
+
+dependencies {
+    compileOnly('com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT')
+    compileOnly('me.clip:placeholderapi:2.11.6')
+    implementation('org.bstats:bstats-bukkit:3.2.1')
+    implementation('org.codemc.worldguardwrapper:worldguardwrapper:1.2.1-SNAPSHOT')
+    implementation('net.kyori:adventure-text-minimessage:4.17.0')
+    implementation('net.kyori:adventure-text-serializer-legacy:4.17.0')
+
+    testImplementation('org.junit.jupiter:junit-jupiter:5.11.4')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.11.4')
+    testImplementation('com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT')
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+tasks.named('runServer') {
+    minecraftVersion('1.21.4')
+}
+
+processResources {
+    filteringCharset = 'UTF-8'
+    inputs.property('version', version)
+    filesMatching('plugin.yml') {
+        expand(version: version)
+    }
+}
+
+tasks.named('jar') {
+    archiveClassifier = 'plain'
+}
+
+tasks.named('shadowJar') {
+    archiveFileName = "pnRelog-${project.version}.jar"
+    archiveClassifier = ''
+    relocate('org.bstats', 'ru.privatenull.pnrelog.libs.bstats')
+    relocate('org.codemc.worldguardwrapper', 'ru.privatenull.pnrelog.libs.worldguardwrapper')
+    relocate('net.kyori.adventure', 'ru.privatenull.pnrelog.libs.adventure')
+    relocate('net.kyori.examination', 'ru.privatenull.pnrelog.libs.examination')
+    manifest {
+        attributes(
+                'Implementation-Title': 'pnRelog',
+                'Implementation-Version': project.version,
+                'Implementation-Vendor': 'inventoryType'
+        )
+    }
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('shadowJar')
+}
+
+tasks.register('releaseJar', Copy) {
+    dependsOn tasks.named('shadowJar')
+    from tasks.named('shadowJar')
+    into layout.projectDirectory.dir('release')
+}

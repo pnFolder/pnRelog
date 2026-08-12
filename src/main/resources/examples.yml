@@ -1,0 +1,138 @@
+# pnRelog examples.yml
+#
+# Этот файл НЕ читается плагином автоматически.
+# Скопируйте нужный блок в config.yml, замените имена/значения и выполните /pnrelog reload.
+# Сначала включите только один сценарий и проверьте его на тестовом сервере.
+
+examples:
+  # 1. Классический anti-relog: 30 секунд боя, смерть после выхода.
+  classic-anti-relog:
+    config:
+      combat:
+        duration-seconds: 30
+      logout:
+        punish-quits: true
+        punish-kicks: true
+        reconnect-grace-seconds: 5
+        penalty:
+          kill: true
+          broadcast: true
+
+  # 2. Мягкий режим: игрок не умирает, но выполняется команда предупреждения.
+  soft-penalty:
+    config:
+      logout:
+        punish-quits: true
+        penalty:
+          kill: false
+          broadcast: true
+          console-commands:
+            - "warn {player} Выход во время боя"
+
+  # 3. Запрет телепортаций и команд, но разрешить /msg и /r.
+  command-policy:
+    config:
+      restrictions:
+        commands:
+          enabled: true
+          mode: WHITELIST
+          entries:
+            - "msg"
+            - "tell"
+            - "r"
+            - "reply"
+          filter-tab-complete: true
+        teleports:
+          enabled: true
+          blocked-causes: [COMMAND, PLUGIN, ENDER_PEARL, CHORUS_FRUIT, NETHER_PORTAL, END_PORTAL]
+
+  # 4. Политика предметов: золотое яблоко раз в 30 секунд, жемчуг полностью запрещён.
+  item-rules:
+    config:
+      items:
+        cooldowns:
+          golden_apple:
+            enabled: true
+            name: "Золотое яблоко"
+            material: GOLDEN_APPLE
+            interactions: [CONSUME]
+            matchers: [MATERIAL]
+            duration-seconds: 30
+            material-cooldown: true
+            linked: []
+        preventions:
+          ender_pearl:
+            enabled: true
+            name: "Эндер-жемчуг"
+            material: ENDER_PEARL
+            interactions: [RIGHT_CLICK_AIR, RIGHT_CLICK_BLOCK, PROJECTILE_LAUNCH]
+            matchers: [MATERIAL]
+            roles: [INTERACTED_ITEM]
+            material-cooldown: true
+
+  # 5. Actions: при старте боя сообщение, звук и title.
+  # {0} = первый аргумент события, {1} = второй аргумент.
+  actions:
+    config:
+      actions:
+        combat-start-attacker:
+          - "[MESSAGE] &cВы начали бой с &f{0}"
+          - "[SOUND] ENTITY_PLAYER_ATTACK_STRONG;1;1"
+          - "[TITLE] &cБОЙ;Не выходите с сервера;5;30;5"
+        combat-start-target:
+          - "[ACTIONBAR] &cВас атакует &f{0}"
+        combat-end:
+          - "[MESSAGE] &aБой окончен"
+        command-blocked:
+          - "[ACTIONBAR] &cКоманда заблокирована ещё {1} сек."
+
+  # 6. Одноразовый переход между серверами через API/команду.
+  proxy-transfer:
+    command: "/pnrelog permit Steve 10 velocity-transfer"
+    result: "Steve может выйти в течение 10 секунд без наказания."
+
+  # 7. PlaceholderAPI:
+  placeholders:
+    config:
+      use-placeholderapi: true
+      display:
+        actionbar:
+          text: "&cБой &8| &f{time}с &8| &7Ранг: %luckperms_prefix%"
+
+  # 8. Кастомный предмет по Base64.
+  # Получите строку командой /pnrelog copy, затем вставьте её вместо значения.
+  custom-item:
+    config:
+      items:
+        cooldowns:
+          custom_sword:
+            enabled: true
+            name: "Боевой меч"
+            item-base64: "ВСТАВЬТЕ_ЗНАЧЕНИЕ_ИЗ_pnrelog_copy"
+            interactions: [PLAYER_HIT_PLAYER, PLAYER_HIT_ENTITY]
+            matchers: [SIMILAR]
+            duration-seconds: 2
+            material-cooldown: false
+            linked: []
+
+  # 9. Region hooks: продолжать PvP в WorldGuard/Towny/Lands только для уже tagged игроков.
+  regions:
+    config:
+      regions:
+        enabled: true
+        provider: AUTO
+        worlds: [world, world_nether, world_the_end]
+
+  # 10. Локальная история и уведомления в Discord.
+  # Локальный audit пишется всегда, если audit.enabled=true.
+  # Webhook отправляет только важные события, а не каждое движение игрока.
+  audit-webhook:
+    config:
+      audit:
+        enabled: true
+        file: audit.jsonl
+        max-file-size-megabytes: 16
+        recent-records: 100
+        webhook:
+          enabled: true
+          url: "https://discord.com/api/webhooks/CHANGE_ME"
