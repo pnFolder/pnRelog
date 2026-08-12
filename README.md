@@ -17,7 +17,7 @@ Developer: `inventoryType`.
 - Powerup providers для Bukkit, Essentials и CMI через API/reflection.
 - WorldGuard, Towny и Lands region hooks без обязательных зависимостей.
 - PlaceholderAPI expansion `%pnrelog_*%`, actions, local audit JSONL и optional webhook.
-- bStats plugin id `33313`.
+- bStats plugin id `33313`; локальный переключатель bStats в конфигурации отсутствует.
 - Paper и Folia scheduler abstraction с entity/global scheduling.
 - Русская/английская локализация, Legacy/MiniMessage renderer.
 - Updater с hardcoded repository `pnFolder/pnRelog`; repository не настраивается в config.yml.
@@ -25,14 +25,15 @@ Developer: `inventoryType`.
 ## Требования
 
 - Paper/Purpur/Folia 1.16.5+
-- Java 17+
-- Java 21+ рекомендуется для новых серверов
+- Java 17+ для базового JAR.
+- Java 21 для `pnRelog-1.0.1-java21.jar`.
+- Java 25 для `pnRelog-1.0.1-java25.jar`.
 
 PlaceholderAPI, TAB, SternalBoard, Essentials, CMI, WorldGuard, Towny, Lands и LangHelper являются optional.
 
 ## Установка Для Владельца Сервера
 
-1. Положите `pnRelog-1.0.0.jar` в папку `plugins/`.
+1. Положите `pnRelog-1.0.1.jar` в папку `plugins/`.
 2. Запустите сервер один раз.
 3. Откройте `plugins/pnRelog/config.yml`.
 4. Измените только нужные значения и выполните `/pnrelog reload`.
@@ -47,6 +48,13 @@ PlaceholderAPI, TAB, SternalBoard, Essentials, CMI, WorldGuard, Towny, Lands и 
 - `penalties.yml` - долговые наказания, переживающие restart.
 
 `examples.yml` не применяется автоматически. Скопируйте нужный блок в `config.yml`, замените имена и выполните `/pnrelog reload`.
+
+## bStats
+
+pnRelog запускает bStats с plugin id `33313` и не показывает отдельную настройку отключения в своём `config.yml`.
+Однако сервер принадлежит владельцу сервера: bStats сохраняет общий opt-out в `plugins/bStats/config.yml`, и pnRelog не обходит этот выбор.
+
+Это ограничение платформы и корректное поведение bStats, а не настройка pnRelog.
 
 ## Как Работает Бой
 
@@ -309,7 +317,19 @@ Lifecycle events находятся в `ru.privatenull.pnrelog.api.event`:
 ./gradlew.bat clean test shadowJar
 ```
 
-Итоговый файл: `build/libs/pnRelog-1.0.0.jar`.
+Итоговый файл: `build/libs/pnRelog-1.0.1.jar`.
+
+Сборка вариантов для Java 21 и Java 25:
+
+```powershell
+./gradlew.bat clean test releaseJar
+```
+
+В `release/` создаются:
+
+- `pnRelog-1.0.1.jar` - базовый вариант с target Java 17.
+- `pnRelog-1.0.1-java21.jar` - вариант для Java 21.
+- `pnRelog-1.0.1-java25.jar` - вариант для Java 25.
 
 Для копирования готового JAR в `release/`:
 

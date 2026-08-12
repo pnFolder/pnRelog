@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.compile.JavaCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     id 'java-library'
     id 'xyz.jpenilla.run-paper' version '3.1.0'
@@ -5,7 +8,7 @@ plugins {
 }
 
 group = 'ru.privatenull'
-version = '1.0.0'
+version = '1.0.1'
 
 base {
     archivesName = 'pnRelog'
@@ -88,12 +91,46 @@ tasks.named('shadowJar') {
     }
 }
 
+def registerJavaVariant = { int javaVersion ->
+    def suffix = "Java${javaVersion}"
+    def compileTask = tasks.register("compile${suffix}", JavaCompile) {
+        source = sourceSets.main.java
+        classpath = sourceSets.main.compileClasspath
+        destinationDirectory = layout.buildDirectory.dir("classes/java${javaVersion}/main")
+        options.encoding = 'UTF-8'
+        options.release = javaVersion
+    }
+    tasks.register("shadow${suffix}", ShadowJar) {
+        dependsOn compileTask, processResources
+        from(compileTask.map { it.destinationDirectory })
+        from(processResources)
+        configurations = [project.configurations.runtimeClasspath]
+        archiveFileName = "pnRelog-${project.version}-java${javaVersion}.jar"
+        archiveClassifier = ''
+        relocate('org.bstats', 'ru.privatenull.pnrelog.libs.bstats')
+        relocate('org.codemc.worldguardwrapper', 'ru.privatenull.pnrelog.libs.worldguardwrapper')
+        relocate('net.kyori.adventure', 'ru.privatenull.pnrelog.libs.adventure')
+        relocate('net.kyori.examination', 'ru.privatenull.pnrelog.libs.examination')
+        manifest {
+            attributes(
+                    'Implementation-Title': 'pnRelog',
+                    'Implementation-Version': project.version,
+                    'Implementation-Vendor': 'inventoryType',
+                    'Build-Java-Version': javaVersion
+            )
+        }
+    }
+}
+
+registerJavaVariant(21)
+registerJavaVariant(25)
+
 tasks.named('build') {
     dependsOn tasks.named('shadowJar')
 }
 
 tasks.register('releaseJar', Copy) {
-    dependsOn tasks.named('shadowJar')
-    from tasks.named('shadowJar')
+    dependsOn tasks.named('shadowJar'), tasks.named('shadowJava21'), tasks.named('shadowJava25')
+    from tasks.named('shadowJar'), tasks.named('shadowJava21'), tasks.named('shadowJava25')
     into layout.projectDirectory.dir('release')
 }

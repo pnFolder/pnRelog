@@ -121,7 +121,7 @@ public final class PnRelogPlugin extends JavaPlugin {
         Objects.requireNonNull(getCommand("pnrelog"), "pnrelog is absent from plugin.yml").setTabCompleter(command);
 
         scheduleRuntimeTasks(true);
-        if (settings.metrics()) new Metrics(this, 33313);
+        new Metrics(this, 33313);
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             PnRelogExpansion expansion = new PnRelogExpansion(combat, getDescription().getVersion());
             if (expansion.register()) unregisterExpansion = expansion::unregister;
@@ -129,7 +129,7 @@ public final class PnRelogPlugin extends JavaPlugin {
         }
         audit.record("PLUGIN_ENABLED", null, "", "version=" + getDescription().getVersion());
         getLogger().info("pnRelog " + getDescription().getVersion() + " включён. Platform: "
-                + (scheduler.isFolia() ? "Folia" : "Paper") + ", bStats: " + settings.metrics());
+                + (scheduler.isFolia() ? "Folia" : "Paper") + ", bStats: enabled");
     }
 
     @Override

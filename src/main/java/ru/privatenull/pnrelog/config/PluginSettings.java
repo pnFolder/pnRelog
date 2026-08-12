@@ -18,7 +18,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public record PluginSettings(
-        boolean metrics,
         String locale,
         String textFormat,
         boolean usePlaceholderApi,
@@ -281,7 +280,7 @@ public record PluginSettings(
         if (!Set.of("LEGACY", "MINIMESSAGE").contains(textFormat)) {
             throw new IllegalArgumentException("text-format must be LEGACY or MINIMESSAGE");
         }
-        return new PluginSettings(config.getBoolean("metrics", true), locale, textFormat,
+        return new PluginSettings(locale, textFormat,
                 config.getBoolean("use-placeholderapi", false), combat, powerups, regions, updates,
                 placeholders, audit, display, new Restrictions(commands, teleports,
                 config.getBoolean("restrictions.block-elytra", true)), logout, new Safety(breaker));

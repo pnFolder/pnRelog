@@ -1,6 +1,3 @@
-# Анонимная статистика bStats (plugin id 33313).
-metrics: true
-
 # ru или en. Для en используется messages-en.yml.
 locale: ru
 # LEGACY поддерживает &-цвета и &#RRGGBB; MINIMESSAGE поддерживает <red>, <gradient> и т.д.

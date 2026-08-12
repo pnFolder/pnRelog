@@ -73,6 +73,7 @@
 
 - Добавлена поддержка Paper/Purpur/Folia 1.16.5+.
 - Добавлена сборка с target release Java 17.
+- Добавлены отдельные shaded-варианты для Java 21 и Java 25.
 - Для сборки проекта используется Gradle 9.7 wrapper.
 - PlaceholderAPI, TAB, SternalBoard, Essentials, CMI, WorldGuard, Towny, Lands и LangHelper остаются optional dependencies.
 
@@ -89,3 +90,5 @@
 > По умолчанию наказание за quit отложено на `reconnect-grace-seconds`, а наказание за kick отключено. Это защищает игроков от ложных смертей при timeout, рестарте и сбоях proxy.
 
 > Для реального proxy-перехода сначала выдавай одноразовый permit через API или `/pnrelog permit`.
+
+> bStats уважает глобальный opt-out в `plugins/bStats/config.yml`. pnRelog не может и не должен обходить решение владельца сервера.
