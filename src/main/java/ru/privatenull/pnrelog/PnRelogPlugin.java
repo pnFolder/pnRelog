@@ -5,7 +5,9 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bstats.bukkit.Metrics;
+import org.pnfolder.pnlibrary.bukkit.bootstrap.PnLibraryBootstrap;
+import ru.privatenull.pnrelog.bootstrap.PnLibraryLifecycleListener;
+import ru.privatenull.pnrelog.integration.PnLibraryRuntime;
 import ru.privatenull.pnrelog.api.CombatEndReason;
 import ru.privatenull.pnrelog.api.PnRelogApi;
 import ru.privatenull.pnrelog.audit.AuditService;
@@ -43,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
 
 public final class PnRelogPlugin extends JavaPlugin {
     private PluginSettings settings;
@@ -60,9 +63,35 @@ public final class PnRelogPlugin extends JavaPlugin {
     private PluginScheduler scheduler;
     private ScheduledHandle tickTask;
     private Runnable unregisterExpansion;
+    private boolean pnLibraryReady;
+    private PnLibraryRuntime pnRuntime;
+
+    @Override
+    public void onLoad() {
+        try {
+            pnLibraryReady = PnLibraryBootstrap.ensureInstalled(this, PnLibraryRuntime.MINIMUM_VERSION);
+        } catch (Throwable failure) {
+            getLogger().log(Level.SEVERE,
+                    "Не удалось автоматически подготовить pnLibrary. pnRelog не будет запущен.", failure);
+        }
+    }
 
     @Override
     public void onEnable() {
+        if (!pnLibraryReady) {
+            getLogger().severe("pnLibrary не подготовлена: проверьте доступ к GitHub и ошибку загрузки выше.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        try {
+            pnRuntime = PnLibraryRuntime.connect(this);
+        } catch (Throwable failure) {
+            getLogger().log(Level.SEVERE, "pnLibrary не удалось включить или подключить к pnRelog.", failure);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        getServer().getPluginManager().registerEvents(new PnLibraryLifecycleListener(this), this);
+        pnRuntime.register();
         saveDefaultConfig();
         saveResource("messages.yml", false);
         saveResource("messages-en.yml", false);
@@ -121,7 +150,6 @@ public final class PnRelogPlugin extends JavaPlugin {
         Objects.requireNonNull(getCommand("pnrelog"), "pnrelog is absent from plugin.yml").setTabCompleter(command);
 
         scheduleRuntimeTasks(true);
-        new Metrics(this, 33313);
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             PnRelogExpansion expansion = new PnRelogExpansion(combat, getDescription().getVersion());
             if (expansion.register()) unregisterExpansion = expansion::unregister;
@@ -130,6 +158,7 @@ public final class PnRelogPlugin extends JavaPlugin {
         audit.record("PLUGIN_ENABLED", null, "", "version=" + getDescription().getVersion());
         getLogger().info("pnRelog " + getDescription().getVersion() + " включён. Platform: "
                 + (scheduler.isFolia() ? "Folia" : "Paper") + ", bStats: enabled");
+        pnRuntime.enabled();
     }
 
     @Override
@@ -145,6 +174,15 @@ public final class PnRelogPlugin extends JavaPlugin {
         if (audit != null) {
             audit.record("PLUGIN_DISABLED", null, "", "normal-shutdown");
             audit.close();
+        }
+        PnLibraryRuntime closing = pnRuntime;
+        pnRuntime = null;
+        if (closing != null) {
+            try {
+                closing.close();
+            } catch (RuntimeException exception) {
+                getLogger().log(Level.WARNING, "Не удалось корректно закрыть контекст pnLibrary", exception);
+            }
         }
     }
 
