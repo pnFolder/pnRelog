@@ -30,10 +30,14 @@ repositories {
     }
 }
 
+def pnLibraryVersion = '0.0.1-dev.6'
+
 dependencies {
+    implementation("io.github.pnfolder:pnlibrary-bootstrap-bukkit:${pnLibraryVersion}")
+    compileOnly("io.github.pnfolder:pnlibrary-api:${pnLibraryVersion}")
+    testImplementation("io.github.pnfolder:pnlibrary-api:${pnLibraryVersion}")
     compileOnly('com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT')
     compileOnly('me.clip:placeholderapi:2.11.6')
-    implementation('org.bstats:bstats-bukkit:3.2.1')
     implementation('org.codemc.worldguardwrapper:worldguardwrapper:1.2.1-SNAPSHOT')
     implementation('net.kyori:adventure-text-minimessage:4.17.0')
     implementation('net.kyori:adventure-text-serializer-legacy:4.17.0')
@@ -53,6 +57,11 @@ java {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 17
+}
+
+configurations.configureEach {
+    attributes.attribute(org.gradle.api.attributes.java.TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 21)
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 tasks.withType(Test).configureEach {
@@ -76,9 +85,13 @@ tasks.named('jar') {
 }
 
 tasks.named('shadowJar') {
+    mergeServiceFiles()
     archiveFileName = "pnRelog-${project.version}.jar"
     archiveClassifier = ''
-    relocate('org.bstats', 'ru.privatenull.pnrelog.libs.bstats')
+    relocate('org.pnfolder.pnlibrary.bootstrap', 'ru.privatenull.pnrelog.libs.pnbootstrap')
+    relocate('org.pnfolder.pnlibrary.bukkit.bootstrap', 'ru.privatenull.pnrelog.libs.pnbootstrap.bukkit')
+    relocate('org.pnfolder.pnlibrary.console', 'ru.privatenull.pnrelog.libs.pnbootstrap.console')
+    relocate('com.google.gson', 'ru.privatenull.pnrelog.libs.gson')
     relocate('org.codemc.worldguardwrapper', 'ru.privatenull.pnrelog.libs.worldguardwrapper')
     relocate('net.kyori.adventure', 'ru.privatenull.pnrelog.libs.adventure')
     relocate('net.kyori.examination', 'ru.privatenull.pnrelog.libs.examination')
@@ -105,9 +118,13 @@ def registerJavaVariant = { int javaVersion ->
         from(compileTask.map { it.destinationDirectory })
         from(processResources)
         configurations = [project.configurations.runtimeClasspath]
+        mergeServiceFiles()
         archiveFileName = "pnRelog-${project.version}-java${javaVersion}.jar"
         archiveClassifier = ''
-        relocate('org.bstats', 'ru.privatenull.pnrelog.libs.bstats')
+        relocate('org.pnfolder.pnlibrary.bootstrap', 'ru.privatenull.pnrelog.libs.pnbootstrap')
+    relocate('org.pnfolder.pnlibrary.bukkit.bootstrap', 'ru.privatenull.pnrelog.libs.pnbootstrap.bukkit')
+    relocate('org.pnfolder.pnlibrary.console', 'ru.privatenull.pnrelog.libs.pnbootstrap.console')
+    relocate('com.google.gson', 'ru.privatenull.pnrelog.libs.gson')
         relocate('org.codemc.worldguardwrapper', 'ru.privatenull.pnrelog.libs.worldguardwrapper')
         relocate('net.kyori.adventure', 'ru.privatenull.pnrelog.libs.adventure')
         relocate('net.kyori.examination', 'ru.privatenull.pnrelog.libs.examination')

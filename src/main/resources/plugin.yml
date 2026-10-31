@@ -6,7 +6,7 @@ folia-supported: true
 authors: [inventoryType]
 description: Independent combat-tag and anti-relog system with a public API.
 website: https://github.com/pnFolder/pnRelog
-softdepend: [PlaceholderAPI, TAB, SternalBoard, Essentials, CMI, WorldGuard, Towny, Lands, LangHelper]
+softdepend: [pnLibrary, PlaceholderAPI, TAB, SternalBoard, Essentials, CMI, WorldGuard, Towny, Lands, LangHelper]
 commands:
   pnrelog:
     description: Управление pnRelog
