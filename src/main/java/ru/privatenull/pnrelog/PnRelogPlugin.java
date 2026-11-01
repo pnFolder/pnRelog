@@ -1,5 +1,6 @@
 package ru.privatenull.pnrelog;
 
+import ru.privatenull.pnrelog.integration.Log;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -71,22 +72,21 @@ public final class PnRelogPlugin extends JavaPlugin {
         try {
             pnLibraryReady = PnLibraryBootstrap.ensureInstalled(this, PnLibraryRuntime.MINIMUM_VERSION);
         } catch (Throwable failure) {
-            getLogger().log(Level.SEVERE,
-                    "Не удалось автоматически подготовить pnLibrary. pnRelog не будет запущен.", failure);
+            Log.error("Не удалось автоматически подготовить pnLibrary. pnRelog не будет запущен.", failure);
         }
     }
 
     @Override
     public void onEnable() {
         if (!pnLibraryReady) {
-            getLogger().severe("pnLibrary не подготовлена: проверьте доступ к GitHub и ошибку загрузки выше.");
+            Log.error("pnLibrary не подготовлена: проверьте доступ к GitHub и ошибку загрузки выше.");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
         try {
             pnRuntime = PnLibraryRuntime.connect(this);
         } catch (Throwable failure) {
-            getLogger().log(Level.SEVERE, "pnLibrary не удалось включить или подключить к pnRelog.", failure);
+            Log.error("pnLibrary не удалось включить или подключить к pnRelog.", failure);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -105,7 +105,7 @@ public final class PnRelogPlugin extends JavaPlugin {
             YamlConfiguration messageConfig = ConfigLoader.load(messageFile(settings));
             messages = new MessageService(messageConfig);
         } catch (IOException | InvalidConfigurationException | IllegalArgumentException exception) {
-            getLogger().severe("pnRelog не запущен: " + exception.getMessage());
+            Log.error("pnRelog не запущен", exception);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -126,7 +126,7 @@ public final class PnRelogPlugin extends JavaPlugin {
             items.load(config);
             actions.load(config);
         } catch (IllegalArgumentException exception) {
-            getLogger().severe("Правила предметов pnRelog не загружены: " + exception.getMessage());
+            Log.error("Правила предметов pnRelog не загружены", exception);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -153,10 +153,10 @@ public final class PnRelogPlugin extends JavaPlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             PnRelogExpansion expansion = new PnRelogExpansion(combat, getDescription().getVersion());
             if (expansion.register()) unregisterExpansion = expansion::unregister;
-            else getLogger().warning("PlaceholderAPI expansion pnrelog не зарегистрирована");
+            else Log.warning("PlaceholderAPI expansion pnrelog не зарегистрирована");
         }
         audit.record("PLUGIN_ENABLED", null, "", "version=" + getDescription().getVersion());
-        getLogger().info("pnRelog " + getDescription().getVersion() + " включён. Platform: "
+        Log.info("pnRelog " + getDescription().getVersion() + " включён. Platform: "
                 + (scheduler.isFolia() ? "Folia" : "Paper") + ", bStats: enabled");
         pnRuntime.started(scheduler.isFolia() ? "Folia" : "Paper", settings.locale(),
                 settings.audit().enabled(), settings.regions().enabled(), settings.updates().enabled(),
@@ -184,7 +184,7 @@ public final class PnRelogPlugin extends JavaPlugin {
             try {
                 closing.close();
             } catch (RuntimeException exception) {
-                getLogger().log(Level.WARNING, "Не удалось корректно закрыть контекст pnLibrary", exception);
+                Log.error("Не удалось корректно закрыть контекст pnLibrary", exception);
             }
         }
     }
@@ -211,7 +211,7 @@ public final class PnRelogPlugin extends JavaPlugin {
             audit.record("CONFIG_RELOADED", null, "", "success");
             return Optional.empty();
         } catch (IOException | InvalidConfigurationException | IllegalArgumentException exception) {
-            getLogger().warning("Конфигурация pnRelog не применена: " + exception.getMessage());
+            Log.error("Конфигурация pnRelog не применена", exception);
             return Optional.ofNullable(exception.getMessage()).or(() -> Optional.of(exception.getClass().getSimpleName()));
         }
     }

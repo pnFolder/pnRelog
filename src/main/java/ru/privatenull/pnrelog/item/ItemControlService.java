@@ -1,5 +1,6 @@
 package ru.privatenull.pnrelog.item;
 
+import ru.privatenull.pnrelog.integration.Log;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -292,7 +293,7 @@ public final class ItemControlService implements ItemControlApi, Listener {
                 }
             });
         } catch (ReflectiveOperationException | IllegalArgumentException exception) {
-            plugin.getLogger().warning("LangHelper item translation недоступен: " + exception.getMessage());
+            Log.error("LangHelper item translation недоступен", exception);
         }
     }
 

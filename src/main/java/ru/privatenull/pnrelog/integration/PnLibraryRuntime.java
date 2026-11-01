@@ -71,6 +71,7 @@ public final class PnLibraryRuntime {
                             .configurationBackup(owner.getDataFolder().toPath(),
                                     "config.yml", "messages.yml", "messages-en.yml", "examples.yml")
                             .artifact("(?i)^pnRelog-[0-9].*\\.jar$", 17)));
+            Log.bind(owner, module);
         } catch (RuntimeException failure) {
             closeRegistration();
             throw failure;
@@ -121,6 +122,7 @@ public final class PnLibraryRuntime {
     }
 
     private void closeRegistration() {
+        Log.unbind();
         PluginRegistration closing = registration;
         registration = null;
         if (closing != null && !closing.isClosed()) closing.close();

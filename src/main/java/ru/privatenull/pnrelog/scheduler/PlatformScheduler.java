@@ -1,5 +1,6 @@
 package ru.privatenull.pnrelog.scheduler;
 
+import ru.privatenull.pnrelog.integration.Log;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -33,7 +34,7 @@ public final class PlatformScheduler implements PluginScheduler {
         } catch (ClassNotFoundException | NoSuchMethodException ignored) {
             detected = false;
         } catch (IllegalAccessException | InvocationTargetException exception) {
-            plugin.getLogger().log(Level.WARNING, "Не удалось инициализировать Folia scheduler", exception);
+            Log.error("Не удалось инициализировать Folia scheduler", exception);
         }
         this.folia = detected;
         this.globalScheduler = scheduler;
@@ -107,7 +108,7 @@ public final class PlatformScheduler implements PluginScheduler {
             }
             return invokeScheduled(entityScheduler, methodName, parameterTypes, arguments);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
-            plugin.getLogger().log(Level.SEVERE, "Ошибка EntityScheduler Folia для " + player.getName(), exception);
+            Log.error("Ошибка EntityScheduler Folia для " + player.getName(), exception);
             return ScheduledHandle.NOOP;
         }
     }
@@ -121,7 +122,7 @@ public final class PlatformScheduler implements PluginScheduler {
             handles.add(handle);
             return handle;
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
-            plugin.getLogger().log(Level.SEVERE, "Ошибка GlobalRegionScheduler Folia: " + methodName, exception);
+            Log.error("Ошибка GlobalRegionScheduler Folia: " + methodName, exception);
             return ScheduledHandle.NOOP;
         }
     }
@@ -161,7 +162,7 @@ public final class PlatformScheduler implements PluginScheduler {
             try {
                 task.getClass().getMethod("cancel").invoke(task);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
-                plugin.getLogger().log(Level.WARNING, "Не удалось отменить Folia task", exception);
+                Log.error("Не удалось отменить Folia task", exception);
             } finally {
                 handles.remove(this);
             }
