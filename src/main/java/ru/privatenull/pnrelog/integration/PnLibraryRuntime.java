@@ -20,6 +20,7 @@ public final class PnLibraryRuntime {
 
     public static final String MINIMUM_VERSION = "0.0.1-dev.6";
     private static final String MODULE_ID = "pnrelog";
+    private static final String PLACEHOLDER_NAMESPACE = "pnrelog";
     private static final int BSTATS_PROJECT_ID = 33313;
     private static final String FASTSTATS_TOKEN = "687e8239c9d7709e42e1502836b02e87";
     private static final String POLICY_SOURCE =
@@ -77,6 +78,24 @@ public final class PnLibraryRuntime {
         } catch (RuntimeException failure) {
             closeRegistration();
             throw failure;
+        }
+    }
+
+    /** Публикует {@code %pnrelog_*%} в PlaceholderAPI через pnLibrary. Возвращает false, если не вышло. */
+    public boolean registerPlaceholders(ru.privatenull.pnrelog.combat.CombatService combat) {
+        if (module == null) return false;
+        PnRelogPlaceholders placeholders = new PnRelogPlaceholders(combat);
+        try {
+            for (String key : PnRelogPlaceholders.KEYS) {
+                module.getPlaceholders().register(key, String.class, builder -> builder
+                        .resolve(request -> placeholders.resolve(
+                                request.getPlayerId(), key, request.getParameters().get("value")))
+                        .publishToPlaceholderApi(PLACEHOLDER_NAMESPACE, key));
+            }
+            return true;
+        } catch (RuntimeException | LinkageError failure) {
+            Log.warning("Плейсхолдеры pnrelog не зарегистрированы; остальные функции работают: " + failure);
+            return false;
         }
     }
 

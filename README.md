@@ -16,11 +16,11 @@ Developer: `inventoryType`.
 - BossBar, встроенный Bukkit scoreboard, TAB и SternalBoard providers.
 - Powerup providers для Bukkit, Essentials и CMI через API/reflection.
 - WorldGuard, Towny и Lands region hooks без обязательных зависимостей.
-- PlaceholderAPI expansion `%pnrelog_*%`, actions, local audit JSONL и optional webhook.
-- bStats plugin id `33313`; локальный переключатель bStats в конфигурации отсутствует.
+- Плейсхолдеры `%pnrelog_*%` для PlaceholderAPI (через pnLibrary), actions, local audit JSONL и optional webhook.
+- Метрики bStats и FastStats подключает pnLibrary (bStats project id `33313`); отдельной настройки в `config.yml` нет.
 - Paper и Folia scheduler abstraction с entity/global scheduling.
 - Русская/английская локализация, Legacy/MiniMessage renderer.
-- Updater с hardcoded repository `pnFolder/pnRelog`; repository не настраивается в config.yml.
+- Обновления проверяет pnLibrary (`/pn update`); репозиторий `pnFolder/pnRelog` не настраивается в config.yml.
 
 ## Требования
 
@@ -51,7 +51,7 @@ PlaceholderAPI, TAB, SternalBoard, Essentials, CMI, WorldGuard, Towny, Lands и 
 
 ## bStats
 
-pnRelog запускает bStats с plugin id `33313` и не показывает отдельную настройку отключения в своём `config.yml`.
+Метрики bStats запускает pnLibrary от имени pnRelog (plugin id `33313`); отдельной настройки отключения в `config.yml` нет.
 Однако сервер принадлежит владельцу сервера: bStats сохраняет общий opt-out в `plugins/bStats/config.yml`, и pnRelog не обходит этот выбор.
 
 Это ограничение платформы и корректное поведение bStats, а не настройка pnRelog.
@@ -252,7 +252,7 @@ public void onEscape(CombatEscapeEvent event) {
 
 `display.scoreboard.provider: AUTO` выбирает SternalBoard, TAB или встроенный Bukkit scoreboard.
 
-`updates.repository` отсутствует намеренно. Updater всегда проверяет `pnFolder/pnRelog`.
+`updates.repository` отсутствует намеренно. Обновления проверяет pnLibrary (`/pn update`) в репозитории `pnFolder/pnRelog`.
 
 ## Команды
 
@@ -264,10 +264,9 @@ public void onEscape(CombatEscapeEvent event) {
 - `/pnrelog permit <игрок> [секунды] [причина]`
 - `/pnrelog history <игрок> [лимит]`
 - `/pnrelog copy`
-- `/pnrelog update [check|install]`
 - `/pnrelog reload`
 
-`/pnrelog update install` скачивает проверенный JAR в `plugins/update/`; работающий файл не перезаписывается.
+Обновления: `/pn update` (команда pnLibrary); диагностика: `/pn debug pnrelog`.
 
 ## Audit И Webhook
 

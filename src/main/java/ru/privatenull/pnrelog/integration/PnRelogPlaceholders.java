@@ -1,58 +1,71 @@
 package ru.privatenull.pnrelog.integration;
 
-import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.OfflinePlayer;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.bukkit.Bukkit;
 import ru.privatenull.pnrelog.api.CombatSnapshot;
 import ru.privatenull.pnrelog.api.OpponentSnapshot;
 import ru.privatenull.pnrelog.combat.CombatService;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
-public final class PnRelogExpansion extends PlaceholderExpansion {
+/** Значения плейсхолдеров {@code %pnrelog_*%}; публикуются в PlaceholderAPI через pnLibrary. */
+public final class PnRelogPlaceholders {
+    /** Ключи, которые публикуются в PlaceholderAPI. Хвост после ключа приходит как параметр value. */
+    public static final List<String> KEYS = List.of(
+            "active", "in", "in_formatted", "time", "time_formatted", "opponents", "opponent_count",
+            "damage_dealt", "damage_taken", "hits_dealt", "hits_taken", "last_attacker",
+            "opponents_contains", "player");
+
+    private static final String PLAYER_PREFIX = "player_";
+    private static final String CONTAINS_MARKER = "_opponents_contains_";
+    /** Ключи без параметров, самые длинные первыми: по ним ищется конец «player_<имя>_<ключ>». */
+    private static final List<String> SIMPLE_KEYS = KEYS.stream()
+            .filter(key -> !key.equals("player") && !key.equals("opponents_contains"))
+            .sorted(Comparator.comparingInt(String::length).reversed())
+            .toList();
+
     private final CombatService combat;
-    private final String version;
 
-    public PnRelogExpansion(CombatService combat, String version) {
+    public PnRelogPlaceholders(CombatService combat) {
         this.combat = combat;
-        this.version = version;
     }
 
-    @Override
-    public @NotNull String getIdentifier() {
-        return "pnrelog";
-    }
-
-    @Override
-    public @NotNull String getAuthor() {
-        return "inventoryType";
-    }
-
-    @Override
-    public @NotNull String getVersion() {
-        return version;
-    }
-
-    @Override
-    public boolean persist() {
-        return true;
-    }
-
-    @Override
-    public @Nullable String onRequest(OfflinePlayer player, @NotNull String parameters) {
-        if (player == null) return "";
-        String key = parameters.toLowerCase(Locale.ROOT);
-        OfflinePlayer requested = player;
-        if (key.startsWith("player_")) {
-            String remainder = parameters.substring("player_".length());
-            int separator = remainder.indexOf('_');
-        if (separator < 1) return combat.settings().placeholders().error();
-            requested = org.bukkit.Bukkit.getOfflinePlayer(remainder.substring(0, separator));
-            key = remainder.substring(separator + 1).toLowerCase(Locale.ROOT);
+    /** Значение для плейсхолдера {@code key} (+ хвост {@code tail}, может быть null) игрока {@code playerId}. */
+    public String resolve(UUID playerId, String key, String tail) {
+        if (playerId == null) return "";
+        String parameters = tail == null || tail.isEmpty() ? key : key + "_" + tail;
+        String lower = parameters.toLowerCase(Locale.ROOT);
+        UUID requested = playerId;
+        String name = null;
+        if (lower.startsWith(PLAYER_PREFIX)) {
+            String remainder = parameters.substring(PLAYER_PREFIX.length());
+            String remainderLower = remainder.toLowerCase(Locale.ROOT);
+            int split = playerKeySplit(remainderLower);
+            if (split < 1) return combat.settings().placeholders().error();
+            name = remainder.substring(0, split);
+            lower = remainderLower.substring(split + 1);
         }
-        Optional<CombatSnapshot> optional = combat.getCachedCombat(requested.getUniqueId())
+        if (name != null) requested = Bukkit.getOfflinePlayer(name).getUniqueId();
+        return value(requested, lower);
+    }
+
+    /** Позиция «_» между именем игрока и ключом; имя может содержать «_». */
+    private static int playerKeySplit(String remainderLower) {
+        int contains = remainderLower.indexOf(CONTAINS_MARKER);
+        if (contains >= 1) return contains;
+        for (String key : SIMPLE_KEYS) {
+            if (remainderLower.endsWith("_" + key) && remainderLower.length() > key.length() + 1) {
+                return remainderLower.length() - key.length() - 1;
+            }
+        }
+        return remainderLower.indexOf('_');
+    }
+
+    private String value(UUID requested, String key) {
+        Optional<CombatSnapshot> optional = combat.getCachedCombat(requested)
                 .filter(snapshot -> snapshot.active(combat.now()));
         if (key.equals("active") || key.equals("in")) return optional.isPresent() ? "true" : "false";
         if (key.equals("in_formatted")) return optional.isPresent()

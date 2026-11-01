@@ -18,7 +18,6 @@ import ru.privatenull.pnrelog.combat.CombatService;
 import ru.privatenull.pnrelog.config.ConfigLoader;
 import ru.privatenull.pnrelog.config.PluginSettings;
 import ru.privatenull.pnrelog.display.CombatDisplay;
-import ru.privatenull.pnrelog.integration.PnRelogExpansion;
 import ru.privatenull.pnrelog.api.item.ItemControlApi;
 import ru.privatenull.pnrelog.api.display.CombatDisplayApi;
 import ru.privatenull.pnrelog.item.ItemControlService;
@@ -60,7 +59,6 @@ public final class PnRelogPlugin extends JavaPlugin {
     private RegionService regions;
     private PluginScheduler scheduler;
     private ScheduledHandle tickTask;
-    private Runnable unregisterExpansion;
     private boolean pnLibraryReady;
     private PnLibraryRuntime pnRuntime;
 
@@ -146,17 +144,14 @@ public final class PnRelogPlugin extends JavaPlugin {
         Objects.requireNonNull(getCommand("pnrelog"), "pnrelog is absent from plugin.yml").setTabCompleter(command);
 
         scheduleRuntimeTasks(true);
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            PnRelogExpansion expansion = new PnRelogExpansion(combat, getDescription().getVersion());
-            if (expansion.register()) unregisterExpansion = expansion::unregister;
-            else Log.warning("PlaceholderAPI expansion pnrelog не зарегистрирована");
-        }
+        boolean placeholderApi = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")
+                && pnRuntime.registerPlaceholders(combat);
         audit.record("PLUGIN_ENABLED", null, "", "version=" + getDescription().getVersion());
         Log.info("pnRelog " + getDescription().getVersion() + " включён. Platform: "
                 + (scheduler.isFolia() ? "Folia" : "Paper") + ", bStats: enabled");
         pnRuntime.started(scheduler.isFolia() ? "Folia" : "Paper", settings.locale(),
                 settings.audit().enabled(), settings.regions().enabled(),
-                Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"));
+                placeholderApi);
     }
 
     @Override
@@ -164,7 +159,6 @@ public final class PnRelogPlugin extends JavaPlugin {
         if (pnRuntime != null) pnRuntime.stopped();
         if (tickTask != null) tickTask.cancel();
         if (scheduler != null) scheduler.cancelAll();
-        if (unregisterExpansion != null) unregisterExpansion.run();
         if (logout != null) logout.shutdown();
         if (combat != null) combat.clearAll(CombatEndReason.SHUTDOWN);
         if (display != null) display.clear();
