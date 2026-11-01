@@ -94,7 +94,7 @@ public final class PnLibraryRuntime {
             else box.skip("Проверка обновлений", "выключена в config.yml");
             if (placeholderApi) box.ok("PlaceholderAPI", "подключён");
             else box.warn("PlaceholderAPI", "не найден, плейсхолдеры недоступны");
-            box.ok("Диагностика", "/pndebug " + MODULE_ID).show();
+            box.ok("Диагностика", "/pn debug " + MODULE_ID).show();
         } catch (RuntimeException failure) {
             owner.getLogger().log(Level.FINE, "Не удалось вывести сообщение о запуске pnRelog", failure);
         }
