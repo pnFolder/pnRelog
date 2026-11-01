@@ -35,7 +35,6 @@ import ru.privatenull.pnrelog.api.action.ActionApi;
 import ru.privatenull.pnrelog.action.ActionService;
 import ru.privatenull.pnrelog.api.region.RegionApi;
 import ru.privatenull.pnrelog.region.RegionService;
-import ru.privatenull.pnrelog.update.UpdateService;
 import ru.privatenull.pnrelog.api.scheduler.PnScheduler;
 import ru.privatenull.pnrelog.text.Colorizer;
 import ru.privatenull.pnrelog.text.PlaceholderSupport;
@@ -59,8 +58,6 @@ public final class PnRelogPlugin extends JavaPlugin {
     private PowerupService powerups;
     private ActionService actions;
     private RegionService regions;
-    private UpdateService updates;
-    private ScheduledHandle updateTask;
     private PluginScheduler scheduler;
     private ScheduledHandle tickTask;
     private Runnable unregisterExpansion;
@@ -121,7 +118,6 @@ public final class PnRelogPlugin extends JavaPlugin {
         regions = new RegionService(this, combat, settings.regions(), getLogger());
         items = new ItemControlService(this, combat, messages, scheduler);
         actions = new ActionService(scheduler, getLogger(), combat);
-        updates = new UpdateService(this, scheduler, messages, settings.updates());
         try {
             items.load(config);
             actions.load(config);
@@ -145,7 +141,7 @@ public final class PnRelogPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(actions, this);
         getServer().getPluginManager().registerEvents(regions, this);
 
-        PnRelogCommand command = new PnRelogCommand(this, combat, logout, messages, audit, items, updates);
+        PnRelogCommand command = new PnRelogCommand(this, combat, logout, messages, audit, items);
         Objects.requireNonNull(getCommand("pnrelog"), "pnrelog is absent from plugin.yml").setExecutor(command);
         Objects.requireNonNull(getCommand("pnrelog"), "pnrelog is absent from plugin.yml").setTabCompleter(command);
 
@@ -159,7 +155,7 @@ public final class PnRelogPlugin extends JavaPlugin {
         Log.info("pnRelog " + getDescription().getVersion() + " включён. Platform: "
                 + (scheduler.isFolia() ? "Folia" : "Paper") + ", bStats: enabled");
         pnRuntime.started(scheduler.isFolia() ? "Folia" : "Paper", settings.locale(),
-                settings.audit().enabled(), settings.regions().enabled(), settings.updates().enabled(),
+                settings.audit().enabled(), settings.regions().enabled(),
                 Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"));
     }
 
@@ -167,7 +163,6 @@ public final class PnRelogPlugin extends JavaPlugin {
     public void onDisable() {
         if (pnRuntime != null) pnRuntime.stopped();
         if (tickTask != null) tickTask.cancel();
-        if (updateTask != null) updateTask.cancel();
         if (scheduler != null) scheduler.cancelAll();
         if (unregisterExpansion != null) unregisterExpansion.run();
         if (logout != null) logout.shutdown();
@@ -206,7 +201,6 @@ public final class PnRelogPlugin extends JavaPlugin {
             powerups.configure(newSettings.powerups().provider());
             logout.updateSettings(newSettings);
             regions.update(newSettings.regions());
-            updates.updateSettings(newSettings.updates());
             scheduleRuntimeTasks(false);
             audit.record("CONFIG_RELOADED", null, "", "success");
             return Optional.empty();
@@ -222,12 +216,6 @@ public final class PnRelogPlugin extends JavaPlugin {
 
     private void scheduleRuntimeTasks(boolean startup) {
         if (tickTask != null) tickTask.cancel();
-        if (updateTask != null) updateTask.cancel();
         tickTask = scheduler.runGlobalTimer(combat::tick, 1L, settings.combat().tickIntervalTicks());
-        updateTask = null;
-        if (!settings.updates().enabled()) return;
-        if (startup) scheduler.runGlobalLater(updates::startupCheck, 40L);
-        updateTask = scheduler.runGlobalTimer(updates::startupCheck,
-                settings.updates().checkIntervalTicks(), settings.updates().checkIntervalTicks());
     }
 }

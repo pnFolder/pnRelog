@@ -3,13 +3,6 @@ locale: ru
 # LEGACY поддерживает &-цвета и &#RRGGBB; MINIMESSAGE поддерживает <red>, <gradient> и т.д.
 text-format: LEGACY
 
-updates:
-  # Репозиторий updater зашит в коде: pnFolder/pnRelog.
-  # Поэтому здесь нет repository и менять адрес обновлений не нужно.
-  enabled: true
-  check-interval-hours: 6
-  download-enabled: true
-
 # Разрешает PlaceholderAPI-placeholders в сообщениях, actions и scoreboard.
 use-placeholderapi: false
 

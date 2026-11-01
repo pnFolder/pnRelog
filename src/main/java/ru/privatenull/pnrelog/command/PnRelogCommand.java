@@ -17,7 +17,6 @@ import ru.privatenull.pnrelog.audit.AuditService;
 import ru.privatenull.pnrelog.combat.CombatService;
 import ru.privatenull.pnrelog.logout.LogoutService;
 import ru.privatenull.pnrelog.item.ItemControlService;
-import ru.privatenull.pnrelog.update.UpdateService;
 import ru.privatenull.pnrelog.text.MessageService;
 
 import java.time.Duration;
@@ -42,23 +41,15 @@ public final class PnRelogCommand implements CommandExecutor, TabCompleter {
     private final MessageService messages;
     private final AuditService audit;
     private final ItemControlService items;
-    private final UpdateService updates;
 
     public PnRelogCommand(PnRelogPlugin plugin, CombatService combat, LogoutService logout,
                            MessageService messages, AuditService audit, ItemControlService items) {
-        this(plugin, combat, logout, messages, audit, items, null);
-    }
-
-    public PnRelogCommand(PnRelogPlugin plugin, CombatService combat, LogoutService logout,
-                           MessageService messages, AuditService audit, ItemControlService items,
-                          UpdateService updates) {
         this.plugin = plugin;
         this.combat = combat;
         this.logout = logout;
         this.messages = messages;
         this.audit = audit;
         this.items = items;
-        this.updates = updates;
     }
 
     @Override
@@ -80,7 +71,6 @@ public final class PnRelogCommand implements CommandExecutor, TabCompleter {
             case "permit" -> permit(sender, args);
             case "history" -> history(sender, args);
             case "copy" -> copy(sender);
-            case "update" -> update(sender, args);
             case "reload" -> reload(sender);
             default -> {
                 messages.list("usage").forEach(sender::sendMessage);
@@ -261,19 +251,12 @@ public final class PnRelogCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    private boolean update(CommandSender sender, String[] args) {
-        if (updates == null) return true;
-        if (args.length >= 2 && args[1].equalsIgnoreCase("install")) updates.install(sender);
-        else updates.checkAndNotify(sender);
-        return true;
-    }
-
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
             List<String> options = new ArrayList<>(List.of("help", "status"));
             if (sender.hasPermission("pnrelog.admin")) {
-                options.addAll(List.of("stats", "tag", "clear", "permit", "history", "copy", "update", "reload"));
+                options.addAll(List.of("stats", "tag", "clear", "permit", "history", "copy", "reload"));
             }
             return matches(args[0], options);
         }
@@ -289,7 +272,6 @@ public final class PnRelogCommand implements CommandExecutor, TabCompleter {
             for (Player player : Bukkit.getOnlinePlayers()) names.add(player.getName());
             return matches(args[2], names);
         }
-        if (args.length == 2 && args[0].equalsIgnoreCase("update")) return matches(args[1], List.of("check", "install"));
         return Collections.emptyList();
     }
 

@@ -72,6 +72,8 @@ public final class PnLibraryRuntime {
                                     "config.yml", "messages.yml", "messages-en.yml", "examples.yml")
                             .artifact("(?i)^pnRelog-[0-9].*\\.jar$", 17)));
             Log.bind(owner, module);
+            Tasks.bind(module);
+            Cooldowns.bind(module);
         } catch (RuntimeException failure) {
             closeRegistration();
             throw failure;
@@ -80,7 +82,7 @@ public final class PnLibraryRuntime {
 
     /** Shows the console card: the plugin has started. */
     public void started(String platform, String locale, boolean audit, boolean regions,
-                        boolean updates, boolean placeholderApi) {
+                        boolean placeholderApi) {
         if (module == null) return;
         try {
             var box = module.getLifecycle().enabled()
@@ -91,8 +93,7 @@ public final class PnLibraryRuntime {
             else box.skip("Аудит", "выключен в config.yml");
             if (regions) box.ok("Регионы", "включены");
             else box.skip("Регионы", "выключены в config.yml");
-            if (updates) box.ok("Проверка обновлений", "включена");
-            else box.skip("Проверка обновлений", "выключена в config.yml");
+            box.ok("Обновления", "проверяет pnLibrary: /pn update");
             if (placeholderApi) box.ok("PlaceholderAPI", "подключён");
             else box.warn("PlaceholderAPI", "не найден, плейсхолдеры недоступны");
             box.ok("Диагностика", "/pn debug " + MODULE_ID).show();
@@ -123,6 +124,8 @@ public final class PnLibraryRuntime {
 
     private void closeRegistration() {
         Log.unbind();
+        Tasks.unbind();
+        Cooldowns.unbind();
         PluginRegistration closing = registration;
         registration = null;
         if (closing != null && !closing.isClosed()) closing.close();

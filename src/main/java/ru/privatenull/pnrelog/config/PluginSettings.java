@@ -24,7 +24,6 @@ public record PluginSettings(
         Combat combat,
         Powerups powerups,
         Regions regions,
-        Updates updates,
         Placeholders placeholders,
         Audit audit,
         Display display,
@@ -56,10 +55,6 @@ public record PluginSettings(
     }
 
     public record Regions(boolean enabled, String provider, Set<String> worlds) {
-    }
-
-    public record Updates(boolean enabled, long checkIntervalTicks,
-                          boolean downloadEnabled) {
     }
 
     public record Placeholders(String error, String trueText, String falseText, String delimiter) {
@@ -168,12 +163,6 @@ public record PluginSettings(
                 config.getString("regions.provider", "AUTO").strip().toUpperCase(Locale.ROOT),
                 lowerCaseSet(config.getStringList("regions.worlds"))
         );
-        int updateHours = integer(config, "updates.check-interval-hours", 6, 1, 168);
-        Updates updates = new Updates(
-                config.getBoolean("updates.enabled", true),
-                updateHours * 60L * 60L * 20L,
-                config.getBoolean("updates.download-enabled", true)
-        );
         Placeholders placeholders = new Placeholders(
                 config.getString("placeholders.error", "N/A"),
                 config.getString("placeholders.true", "&aДа"),
@@ -281,7 +270,7 @@ public record PluginSettings(
             throw new IllegalArgumentException("text-format must be LEGACY or MINIMESSAGE");
         }
         return new PluginSettings(locale, textFormat,
-                config.getBoolean("use-placeholderapi", false), combat, powerups, regions, updates,
+                config.getBoolean("use-placeholderapi", false), combat, powerups, regions,
                 placeholders, audit, display, new Restrictions(commands, teleports,
                 config.getBoolean("restrictions.block-elytra", true)), logout, new Safety(breaker));
     }
