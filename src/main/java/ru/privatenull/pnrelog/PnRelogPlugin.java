@@ -158,11 +158,14 @@ public final class PnRelogPlugin extends JavaPlugin {
         audit.record("PLUGIN_ENABLED", null, "", "version=" + getDescription().getVersion());
         getLogger().info("pnRelog " + getDescription().getVersion() + " включён. Platform: "
                 + (scheduler.isFolia() ? "Folia" : "Paper") + ", bStats: enabled");
-        pnRuntime.enabled();
+        pnRuntime.started(scheduler.isFolia() ? "Folia" : "Paper", settings.locale(),
+                settings.audit().enabled(), settings.regions().enabled(), settings.updates().enabled(),
+                Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"));
     }
 
     @Override
     public void onDisable() {
+        if (pnRuntime != null) pnRuntime.stopped();
         if (tickTask != null) tickTask.cancel();
         if (updateTask != null) updateTask.cancel();
         if (scheduler != null) scheduler.cancelAll();

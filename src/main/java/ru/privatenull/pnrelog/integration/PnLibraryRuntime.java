@@ -77,25 +77,46 @@ public final class PnLibraryRuntime {
         }
     }
 
-    public void enabled() {
+    /** Shows the console card: the plugin has started. */
+    public void started(String platform, String locale, boolean audit, boolean regions,
+                        boolean updates, boolean placeholderApi) {
         if (module == null) return;
         try {
-            module.getLifecycle().enabled().show();
+            var box = module.getLifecycle().enabled()
+                    .ok("Платформа", platform)
+                    .ok("Язык", locale)
+                    .ok("Хранилище", "файлы (БД не используется)");
+            if (audit) box.ok("Аудит", "включён");
+            else box.skip("Аудит", "выключен в config.yml");
+            if (regions) box.ok("Регионы", "включены");
+            else box.skip("Регионы", "выключены в config.yml");
+            if (updates) box.ok("Проверка обновлений", "включена");
+            else box.skip("Проверка обновлений", "выключена в config.yml");
+            if (placeholderApi) box.ok("PlaceholderAPI", "подключён");
+            else box.warn("PlaceholderAPI", "не найден, плейсхолдеры недоступны");
+            box.ok("Диагностика", "/pndebug " + MODULE_ID).show();
         } catch (RuntimeException failure) {
             owner.getLogger().log(Level.FINE, "Не удалось вывести сообщение о запуске pnRelog", failure);
         }
     }
 
-    public void close() {
+    /** Shows the console card: the plugin is stopping. Must run before the registration is closed. */
+    public void stopped() {
         ModuleContext closing = module;
-        module = null;
-        if (closing != null && !closing.isClosed()) {
-            try {
-                closing.getLifecycle().disabled().show();
-            } catch (RuntimeException failure) {
-                owner.getLogger().log(Level.FINE, "Не удалось вывести сообщение об остановке pnRelog", failure);
-            }
+        if (closing == null || closing.isClosed()) return;
+        try {
+            closing.getLifecycle().disabled()
+                    .ok("Бои", "сброшены")
+                    .ok("Аудит", "закрыт")
+                    .show();
+        } catch (RuntimeException failure) {
+            owner.getLogger().log(Level.FINE, "Не удалось вывести сообщение об остановке pnRelog", failure);
         }
+    }
+
+    public void close() {
+        stopped();
+        module = null;
         closeRegistration();
     }
 
