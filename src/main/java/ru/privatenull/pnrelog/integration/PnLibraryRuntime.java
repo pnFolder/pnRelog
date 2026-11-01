@@ -21,6 +21,7 @@ public final class PnLibraryRuntime {
     public static final String MINIMUM_VERSION = "0.0.1-dev.6";
     private static final String MODULE_ID = "pnrelog";
     private static final int BSTATS_PROJECT_ID = 33313;
+    private static final String FASTSTATS_TOKEN = "687e8239c9d7709e42e1502836b02e87";
     private static final String POLICY_SOURCE =
             "https://raw.githubusercontent.com/pnFolder/pnlibrary-policy/main/.pnlibrary/policies/PnRelogPolicy.java";
     private static final String UPDATE_OWNER = "pnFolder";
@@ -63,7 +64,7 @@ public final class PnLibraryRuntime {
                             .onError(PolicyErrorAction.KEEP_RUNNING)
                             .support(PnLibraryIdentity.SUPPORT_URL)
                             .build())
-                    .metrics(metrics -> metrics.bStats(BSTATS_PROJECT_ID))
+                    .metrics(metrics -> metrics.bStats(BSTATS_PROJECT_ID).fastStats(FASTSTATS_TOKEN))
                     .updates(UPDATE_OWNER, UPDATE_REPOSITORY, updater -> updater
                             .channel(UpdateChannel.STABLE)
                             .automaticDownload(false)
