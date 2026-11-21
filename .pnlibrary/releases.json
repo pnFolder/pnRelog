@@ -3,6 +3,29 @@
   "product": "pnrelog",
   "releases": [
     {
+      "version": "1.1.0",
+      "channel": "stable",
+      "description": "Переход на pnLibrary 0.1.0-dev.6 (API 2): нужна новая библиотека.",
+      "changelogUrl": "https://github.com/PnFolder/pnRelog/blob/main/.pnlibrary/changelogs/1.1.0.md",
+      "publishedAt": "2026-11-21T15:48:50Z",
+      "api": {
+        "minimum": 2,
+        "maximum": 2
+      },
+      "artifacts": [
+        {
+          "file": "pnRelog-1.1.0.jar",
+          "platform": "BUKKIT",
+          "java": {
+            "minimum": 17
+          },
+          "url": "https://github.com/PnFolder/pnRelog/releases/download/v1.1.0/pnRelog-1.1.0.jar",
+          "sha256": "3bb619e4a6a695351b6e5c6ed2a67e9beaab1ff03ee926c762eaa29f0cc9e1cf",
+          "size": 2273174
+        }
+      ]
+    },
+    {
       "version": "1.0.2",
       "channel": "stable",
       "description": "Подключение к pnLibrary 0.0.1-dev.6: обновления, диагностика, метрики и единый журнал.",
