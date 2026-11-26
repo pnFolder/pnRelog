@@ -207,7 +207,8 @@ use-placeholderapi: true
 - `%pnrelog_damage_dealt%`, `%pnrelog_damage_taken%`.
 - `%pnrelog_hits_dealt%`, `%pnrelog_hits_taken%`.
 - `%pnrelog_last_attacker%`.
-- `%pnrelog_player_Steve_time%` - данные другого игрока.
+- `%pnrelog_player_Steve_time%` - данные другого игрока (любой ключ выше; также `_opponents_contains_<ник>` и `_formatted`). Ник с `_` пишите как `~5F`: `Mr~5FX`.
+- `%pnrelog_opponents_contains_<ник>%`, `..._formatted` - есть ли ник среди ваших противников.
 
 ## API Пример
 

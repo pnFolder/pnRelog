@@ -17,7 +17,7 @@ import java.util.logging.Level;
 /** Managed pnLibrary integration loaded only after the dependency is enabled. */
 public final class PnLibraryRuntime {
 
-    public static final String MINIMUM_VERSION = "0.1.0-dev.7";
+    public static final String MINIMUM_VERSION = "0.1.0-dev.8";
     private static final String MODULE_ID = "pnrelog";
     private static final String PLACEHOLDER_NAMESPACE = "pnrelog";
     private static final int BSTATS_PROJECT_ID = 33313;
@@ -83,9 +83,14 @@ public final class PnLibraryRuntime {
         PnRelogPlaceholders placeholders = new PnRelogPlaceholders(combat);
         try {
             for (String key : PnRelogPlaceholders.KEYS) {
-                module.getPlaceholders().value(key, "", PLACEHOLDER_NAMESPACE,
-                        viewer -> placeholders.resolve(viewer.getPlayerId(), key, null));
+                // Составной ключ (in_formatted) в адресе пишется через точку: PlaceholderAPI делит имя по «_».
+                module.getPlaceholders().value(key.replace('_', '.'), "", PLACEHOLDER_NAMESPACE,
+                        viewer -> placeholders.value(viewer.getPlayerId(), key));
             }
+            module.getPlaceholders().registerPublished(PLACEHOLDER_NAMESPACE,
+                    new PlayerValues(placeholders), new PlayerFormats(placeholders),
+                    new PlayerContainsFormat(placeholders), new OpponentsValues(placeholders),
+                    new OpponentsFormat(placeholders));
             return true;
         } catch (RuntimeException | LinkageError failure) {
             Log.warning("Плейсхолдеры pnrelog не зарегистрированы; остальные функции работают: " + failure);
