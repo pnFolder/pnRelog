@@ -31,7 +31,7 @@ repositories {
     }
 }
 
-def pnLibraryVersion = '0.1.0-dev.6'
+def pnLibraryVersion = '0.1.0-dev.7'
 
 dependencies {
     implementation("io.github.pnfolder:pnlibrary-bootstrap-bukkit:${pnLibraryVersion}")

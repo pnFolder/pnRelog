@@ -5,12 +5,11 @@ import org.pnfolder.pnlibrary.api.diagnostics.DiagnosticConfiguration;
 import org.pnfolder.pnlibrary.api.diagnostics.report.DiagnosticContainer;
 import org.pnfolder.pnlibrary.api.plugin.ModuleContext;
 import org.pnfolder.pnlibrary.api.plugin.PluginRegistration;
-import org.pnfolder.pnlibrary.api.remote.PolicyErrorAction;
+import org.pnfolder.pnlibrary.api.remote.result.PolicyErrorAction;
 import org.pnfolder.pnlibrary.api.remote.RemotePolicySettings;
 import org.pnfolder.pnlibrary.api.runtime.PnLibrary;
 import org.pnfolder.pnlibrary.api.runtime.PnLibraryIdentity;
 import org.pnfolder.pnlibrary.api.runtime.PnLibraryProvider;
-import org.pnfolder.pnlibrary.api.updates.product.UpdateChannel;
 
 import java.util.Map;
 import java.util.logging.Level;
@@ -18,7 +17,7 @@ import java.util.logging.Level;
 /** Managed pnLibrary integration loaded only after the dependency is enabled. */
 public final class PnLibraryRuntime {
 
-    public static final String MINIMUM_VERSION = "0.1.0-dev.6";
+    public static final String MINIMUM_VERSION = "0.1.0-dev.7";
     private static final String MODULE_ID = "pnrelog";
     private static final String PLACEHOLDER_NAMESPACE = "pnrelog";
     private static final int BSTATS_PROJECT_ID = 33313;
@@ -63,12 +62,9 @@ public final class PnLibraryRuntime {
                     .remotePolicy(RemotePolicySettings.builder()
                             .source(POLICY_SOURCE)
                             .onError(PolicyErrorAction.KEEP_RUNNING)
-                            .support(PnLibraryIdentity.SUPPORT_URL)
                             .build())
                     .metrics(metrics -> metrics.bStats(BSTATS_PROJECT_ID).fastStats(FASTSTATS_TOKEN))
                     .updates(UPDATE_OWNER, UPDATE_REPOSITORY, updater -> updater
-                            .channel(UpdateChannel.STABLE)
-                            .automaticDownload(false)
                             .configurationBackup(owner.getDataFolder().toPath(),
                                     "config.yml", "messages.yml", "messages-en.yml", "examples.yml")
                             .artifact("(?i)^pnRelog-[0-9].*\\.jar$", 17)));
@@ -87,10 +83,8 @@ public final class PnLibraryRuntime {
         PnRelogPlaceholders placeholders = new PnRelogPlaceholders(combat);
         try {
             for (String key : PnRelogPlaceholders.KEYS) {
-                module.getPlaceholders().register(key, String.class, builder -> builder
-                        .resolve(request -> placeholders.resolve(
-                                request.getPlayerId(), key, request.getParameters().get("value")))
-                        .publishToPlaceholderApi(PLACEHOLDER_NAMESPACE, key));
+                module.getPlaceholders().value(key, "", PLACEHOLDER_NAMESPACE,
+                        viewer -> placeholders.resolve(viewer.getPlayerId(), key, null));
             }
             return true;
         } catch (RuntimeException | LinkageError failure) {
