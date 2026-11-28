@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'ru.privatenull'
-version = '1.1.1'
+version = '1.1.2'
 
 base {
     archivesName = 'pnRelog'
@@ -31,7 +31,7 @@ repositories {
     }
 }
 
-def pnLibraryVersion = '0.1.0-dev.6'
+def pnLibraryVersion = '0.1.0-dev.9'
 
 dependencies {
     implementation("io.github.pnfolder:pnlibrary-bootstrap-bukkit:${pnLibraryVersion}")
@@ -43,6 +43,8 @@ dependencies {
     implementation('net.kyori:adventure-text-minimessage:4.17.0')
     implementation('net.kyori:adventure-text-serializer-legacy:4.17.0')
 
+    testImplementation("io.github.pnfolder:pnlibrary-core:${pnLibraryVersion}") { transitive = false }
+    testImplementation('org.jetbrains:annotations:24.1.0')
     testImplementation('org.junit.jupiter:junit-jupiter:5.11.4')
     testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.11.4')
     testImplementation('com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT')
